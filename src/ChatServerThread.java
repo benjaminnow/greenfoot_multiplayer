@@ -16,11 +16,15 @@ public class ChatServerThread extends Thread {
 
     public ChatServerThread(String name) throws IOException {
         super(name);
-        socket = new DatagramSocket(4444);
+        // creates a datagram socket bound to computer's address with any available port
+        socket = new DatagramSocket(0, InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));
         ports = new ArrayList<Integer>();
         msgs = new ArrayList<String>();
         ips = new ArrayList<InetAddress>();
+        System.out.println(socket.getLocalAddress() + ": " + socket.getLocalPort());
     }
+
+
 
     public void addToConnected(DatagramPacket p) {
         int port = p.getPort();
@@ -65,12 +69,10 @@ public class ChatServerThread extends Thread {
                 socket.receive(packet);
                 addToConnected(packet);
                 sendToEveryoneButOne(packet);
-                //String received = new String(packet.getData(), 0, packet.getLength());
-                //msgs.add(received);
-                //System.out.println(msgs);
+                String received = new String(packet.getData(), 0, packet.getLength());
+                msgs.add(received);
+                System.out.println("msgs: " + msgs);
 
-                //ports.add(packet.getPort());
-                //System.out.println(ports);
             } catch (IOException e){
                 e.printStackTrace();
             }
