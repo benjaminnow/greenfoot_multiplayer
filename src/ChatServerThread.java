@@ -6,9 +6,8 @@ import java.util.ArrayList;
 
 public class ChatServerThread extends Thread {
     private DatagramSocket socket = null;
-    private ArrayList<Integer> ports;
-    private ArrayList<String> msgs;
-    private ArrayList<InetAddress> ips;
+    private ArrayList<ConnectedUser> users;
+    private int tick;
 
     public ChatServerThread() throws IOException{
         this("ChatServerThread");
@@ -18,9 +17,8 @@ public class ChatServerThread extends Thread {
         super(name);
         // creates a datagram socket bound to computer's address with any available port
         socket = new DatagramSocket(0, InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));
-        ports = new ArrayList<Integer>();
-        msgs = new ArrayList<String>();
-        ips = new ArrayList<InetAddress>();
+        users = new ArrayList<ConnectedUser>();
+        tick = 0; //todo: increment tick feature
         System.out.println(socket.getLocalAddress() + ": " + socket.getLocalPort());
     }
 
@@ -30,33 +28,39 @@ public class ChatServerThread extends Thread {
         int port = p.getPort();
         InetAddress addr = p.getAddress();
         boolean in = false;
-        for(int i = 0; i < ports.size(); i++) {
-            if(ports.get(i) == port) {
+        for(int i = 0; i < users.size(); i++) {
+            if(users.get(i).getPort() == port) {
                 in = true;
             }
         }
         if(!in) {
-            ips.add(addr);
-            ports.add(port);
+            users.add(new ConnectedUser(addr, port));
         }
-        System.out.println("ips: " + ips);
-        System.out.println("ports: " + ports);
     }
 
     public void sendToEveryoneButOne(DatagramPacket p) {
         int packetPort = p.getPort();
         InetAddress packetAddr = p.getAddress();
-        for(int i = 0; i < ports.size(); i++) {
-            if(ports.get(i) != packetPort) {
+        for(int i = 0; i < users.size(); i++) {
+            if(users.get(i).getPort() != packetPort) {
                 try {
                     byte[] buff = new byte[256];
                     String packetText = new String(p.getData(), 0, p.getLength());
                     buff = packetText.getBytes();
-                    DatagramPacket packet = new DatagramPacket(buff, buff.length, ips.get(i), ports.get(i));
+                    DatagramPacket packet = new DatagramPacket(buff, buff.length, users.get(i).getAddress(), users.get(i).getPort());
                     socket.send(packet);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    public void packetToSender(DatagramPacket packet) {
+        for(int i = 0; i < users.size(); i++) {
+            if(users.get(i).getAddress().equals(packet.getAddress()) && users.get(i).getPort() == packet.getPort()) {
+                users.get(i).setMessage(packet);
+                break;
             }
         }
     }
@@ -69,9 +73,10 @@ public class ChatServerThread extends Thread {
                 socket.receive(packet);
                 addToConnected(packet);
                 sendToEveryoneButOne(packet);
+                packetToSender(packet);
+
                 String received = new String(packet.getData(), 0, packet.getLength());
-                msgs.add(received);
-                System.out.println("msgs: " + msgs);
+                System.out.println(received);
 
             } catch (IOException e){
                 e.printStackTrace();
