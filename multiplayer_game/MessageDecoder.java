@@ -34,6 +34,8 @@ public class MessageDecoder extends Actor
                         renderOtherEnemies(commands.get(c));
                     case "POS":
                         //setLocationEnemy(commands.get(c));
+                    default:
+                        return;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
                 System.out.println("not valid command");
@@ -46,13 +48,25 @@ public class MessageDecoder extends Actor
         World w = p.getWorld();
         int x = Integer.parseInt(command[2]);
         int y = Integer.parseInt(command[3]);
-        EnemyClient e = new EnemyClient();
+        int idnum = Integer.parseInt(command[0]);
+        EnemyClient e = new EnemyClient(idnum);
         w.addObject(e, x, y);
         p.addEnemies(e);
     }
 
+    public void setLocationEnemy(String[] command) {
+        World w = p.getWorld();
+        List<EnemyClient> enemies = w.getObjects(EnemyClient.class);
+        for(int i = 0; i < enemies.size(); i++) {
+            if(enemies.get(i).getId() == Integer.parseInt(command[0])) {
+                enemies.get(i).setLocation(Integer.parseInt(command[2]), Integer.parseInt(command[3]));
+                return;
+            }
+        }
+    }
+
     public void act() 
     {
-        // Add your action code here.
+
     }    
 }

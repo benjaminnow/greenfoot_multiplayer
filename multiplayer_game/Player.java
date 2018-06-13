@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class Player extends Actor
 {
@@ -93,12 +94,14 @@ public class Player extends Actor
     }
 
     public String getLocation() {
-        String loc = "l:" + getY() + "," + getX();
+        String loc = "POS:" + getY() + ":" + getX();
+        System.out.println("sent: " + loc);
         return(loc);
     }
 
     public String getAngle() {
-        String angle = "a:" + getRotation();
+        String angle = "ANGL:" + getRotation();
+        System.out.println("sent: " + angle);
         return(angle);
     }
     
@@ -150,7 +153,8 @@ public class Player extends Actor
         move();
         aim();
         shoot();
-        send(getLocation());
-        send(getAngle());
+        send(getLocation()); //todo: stream this so that socket on server won't get stuck
+        //send(getAngle());
+
     }    
 }

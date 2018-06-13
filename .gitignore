@@ -1,4 +1,5 @@
 *.class
+*.ctxt
 BroadcastingClient.java
 MulticastClient.java
 MulticastServer.java

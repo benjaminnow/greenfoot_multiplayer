@@ -141,10 +141,10 @@ public class GameServerThread extends Thread {
     }
 
     public void runLobby() {
+        byte[] buff = new byte[256];
+        DatagramPacket packet = new DatagramPacket(buff, buff.length);
         while(!lobbyReady) { //loops while server still wants players to connect and not all ready packets received
             try{
-                byte[] buff = new byte[256];
-                DatagramPacket packet = new DatagramPacket(buff, buff.length);
                 socket.receive(packet);
                 addToConnected(packet);
                 sendReady(); //sends ready packet to client for them to respond
@@ -165,25 +165,56 @@ public class GameServerThread extends Thread {
         System.out.println("all clients ready");
     }
 
+    public void getPacketsInTick() {
+        long current_time = System.currentTimeMillis();
+        int time_delta = 30;
+        byte[] buff = new byte[256];
+        DatagramPacket packet = new DatagramPacket(buff, buff.length);
+        while((System.currentTimeMillis() - current_time) <= time_delta) {
+            System.out.println("here");
+            try {
+                socket.receive(packet);
+                setCurrentCommands(packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        sendCurrentCommands();
+    }
 
+    public void setCurrentCommands(DatagramPacket packet) {
+        for(int i = 0; i < users.size(); i++) {
+            if(packet.getAddress().equals(users.get(i).getAddress()) && packet.getPort() == users.get(i).getPort()) {
+                users.get(i).setCommand(packet);
+            }
+        }
+    }
+
+    public void sendCurrentCommands() {
+        String toSend = "";
+        for(int i = 0; i < users.size(); i++) {
+            for(int j = 0; j < i; j++) {
+                toSend += users.get(j).getCommand() + ",";
+            }
+            for(int k = i+1; k < users.size(); k++) {
+                toSend += users.get(k).getCommand() + ",";
+            }
+            send(toSend, users.get(i).getAddress(), users.get(i).getPort());
+            System.out.println("tosend: " + toSend);
+            toSend = "";
+        }
+        for(ConnectedUser u : users) {
+            u.setCommand(null);
+        }
+    }
+
+
+    //todo: clients now start off in the same state, they will block until they receive packets, so implement packet distribution and also tick function
 
     public void run() {
         runLobby(); //gets all connected clients into a lobby so they can start at the same time
         while(true) {
-            try {
-                byte[] buff = new byte[256];
-                DatagramPacket packet = new DatagramPacket(buff, buff.length);
-                socket.receive(packet);
-                //addToConnected(packet);
-                sendToEveryoneButOne(packet);
-                packetToSender(packet); //sets current msg/command to command received(could be null)
-
-                //String received = new String(packet.getData(), 0, packet.getLength());
-                //System.out.println(received);
-
-            } catch (IOException e){
-                e.printStackTrace();
-            }
+            getPacketsInTick();
         }
     }
 }

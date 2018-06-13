@@ -7,8 +7,9 @@ public class ConnectedUser {
     private Message msg;
     private boolean ready;
     private int[] startingLocation;
-    private static int counter = 0;
+    private static int counter = 0; //used to get unique ids
     private final int id;
+    private String command;
 
     public ConnectedUser(InetAddress addr, int p) {
         address = addr;
@@ -17,6 +18,20 @@ public class ConnectedUser {
         ready = false;
         startingLocation = new int[2];
         id = counter++;
+        command = null;
+    }
+
+    public void setCommand(DatagramPacket packet) {
+        if(packet == null) {
+            command = null;
+        } else {
+            command = id + ":" + new String(packet.getData(), 0, packet.getLength());
+            System.out.println(id + ": " + command);
+        }
+    }
+
+    public String getCommand() {
+        return(command);
     }
 
     public Message getMessage() {
