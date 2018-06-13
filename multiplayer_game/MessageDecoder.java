@@ -4,7 +4,7 @@ import java.util.*;
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 
 
-public class MessageDecoder extends Actor
+public class MessageDecoder
 {
     
     private Player p;
@@ -33,7 +33,7 @@ public class MessageDecoder extends Actor
                     case "SLO": 
                         renderOtherEnemies(commands.get(c));
                     case "POS":
-                        //setLocationEnemy(commands.get(c));
+                        setLocationEnemy(commands.get(c));
                     default:
                         return;
                 }

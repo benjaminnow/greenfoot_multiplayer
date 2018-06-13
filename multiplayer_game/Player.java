@@ -19,6 +19,8 @@ public class Player extends Actor
     private boolean ready; //ready from the server
     private ArrayList<EnemyClient> enemies;
     private MessageDecoder decoder;
+    private Thread datastream = new Thread(new PlayerDataStream(this));
+    boolean do_once = false;
     
     public Player(String ip, int port) {
         ammo = 10;
@@ -94,14 +96,14 @@ public class Player extends Actor
     }
 
     public String getLocation() {
-        String loc = "POS:" + getY() + ":" + getX();
-        System.out.println("sent: " + loc);
+        String loc = "POS:" + getX() + ":" + getY();
+        //System.out.println("sent: " + loc);
         return(loc);
     }
 
     public String getAngle() {
         String angle = "ANGL:" + getRotation();
-        System.out.println("sent: " + angle);
+        //System.out.println("sent: " + angle);
         return(angle);
     }
     
@@ -153,7 +155,12 @@ public class Player extends Actor
         move();
         aim();
         shoot();
-        send(getLocation()); //todo: stream this so that socket on server won't get stuck
+        if(!do_once) {
+            datastream.start();
+            do_once = true;
+        }
+        //send(getLocation()); //todo: stream this so that socket on server won't get stuck
+        
         //send(getAngle());
 
     }    

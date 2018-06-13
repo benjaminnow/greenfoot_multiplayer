@@ -171,7 +171,7 @@ public class GameServerThread extends Thread {
         byte[] buff = new byte[256];
         DatagramPacket packet = new DatagramPacket(buff, buff.length);
         while((System.currentTimeMillis() - current_time) <= time_delta) {
-            System.out.println("here");
+            //System.out.println("here");
             try {
                 socket.receive(packet);
                 setCurrentCommands(packet);
@@ -200,7 +200,7 @@ public class GameServerThread extends Thread {
                 toSend += users.get(k).getCommand() + ",";
             }
             send(toSend, users.get(i).getAddress(), users.get(i).getPort());
-            System.out.println("tosend: " + toSend);
+            //System.out.println("tosend: " + toSend);
             toSend = "";
         }
         for(ConnectedUser u : users) {

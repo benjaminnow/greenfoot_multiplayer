@@ -26,7 +26,6 @@ public class ConnectedUser {
             command = null;
         } else {
             command = id + ":" + new String(packet.getData(), 0, packet.getLength());
-            System.out.println(id + ": " + command);
         }
     }
 
