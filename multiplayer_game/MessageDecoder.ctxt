@@ -1,0 +1,11 @@
+#BlueJ class context
+comment0.target=MessageDecoder
+comment1.params=p
+comment1.target=MessageDecoder(Player)
+comment2.params=p
+comment2.target=void\ runCommand(java.net.DatagramPacket)
+comment3.params=command
+comment3.target=void\ renderOtherEnemies(java.lang.String[])
+comment4.params=
+comment4.target=void\ act()
+numComments=5

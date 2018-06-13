@@ -1,0 +1,27 @@
+#BlueJ class context
+comment0.target=Player
+comment1.params=ip\ port
+comment1.target=Player(java.lang.String,\ int)
+comment10.params=
+comment10.target=void\ receiveMessage()
+comment11.params=e
+comment11.target=void\ addEnemies(EnemyClient)
+comment12.params=
+comment12.target=void\ act()
+comment2.params=
+comment2.target=void\ receiveReady()
+comment3.params=
+comment3.target=void\ move()
+comment4.params=
+comment4.target=void\ aim()
+comment5.params=
+comment5.target=void\ shoot()
+comment6.params=
+comment6.target=java.lang.String\ getLocation()
+comment7.params=
+comment7.target=java.lang.String\ getAngle()
+comment8.params=msg
+comment8.target=void\ send(java.lang.String)
+comment9.params=
+comment9.target=void\ getTick()
+numComments=13

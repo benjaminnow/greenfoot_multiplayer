@@ -25,8 +25,6 @@ public class GameServerThread extends Thread {
         System.out.println(socket.getLocalAddress() + ": " + socket.getLocalPort());
     }
 
-
-
     public void addToConnected(DatagramPacket p) {
         int port = p.getPort();
         InetAddress addr = p.getAddress();
@@ -55,15 +53,9 @@ public class GameServerThread extends Thread {
     }
 
     public void sendReady() {
-        byte[] buff = new byte[256];
-        buff = "R".getBytes();
-        DatagramPacket packet;
         for(int i  = 0; i < users.size(); i++) {
-            try {
-                packet = new DatagramPacket(buff, buff.length, users.get(i).getAddress(), users.get(i).getPort());
-                socket.send(packet);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(!users.get(i).getReady()) {
+                send("R", users.get(i).getAddress(), users.get(i).getPort());
             }
         }
     }
@@ -76,9 +68,46 @@ public class GameServerThread extends Thread {
             for(int i = 0; i < users.size(); i++) {
                 if(packet_port == users.get(i).getPort() && packetAddress.equals(users.get(i).getAddress())) {
                     users.get(i).setReady();
-                    System.out.println("ready to go");
+                    System.out.println(users.get(i).getAddress() + ":" + users.get(i).getPort() + " is ready to go");
                 }
             }
+        }
+    }
+
+    public void receiveStartLocation(DatagramPacket packet) {
+        String received = new String(packet.getData(), 0, packet.getLength());
+        String[] receivedSplit = received.split(":");
+        if(receivedSplit[0].equals("SL")) {
+            for(int i = 0; i < users.size(); i++) {
+                if(users.get(i).getAddress().equals(packet.getAddress()) && users.get(i).getPort() == packet.getPort()) {
+                    users.get(i).setStartingLocation(Integer.parseInt(receivedSplit[1]), Integer.parseInt(receivedSplit[2]));
+                }
+            }
+        }
+    }
+
+    public void send(String msg, InetAddress to, int to_port) {
+        try {
+            byte[] buff = new byte[256];
+            buff = msg.getBytes();
+            DatagramPacket packet = new DatagramPacket(buff, buff.length, to, to_port);
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendStartingLocations() {
+        String toSend = "";
+        for(int i = 0; i < users.size(); i++) {
+            for(int j = 0; j < i; j++) {
+                toSend += users.get(j).getId() + ":" + "SLO:" + users.get(j).getStartingLocation()[0] + ":" + users.get(j).getStartingLocation()[1] + ",";
+            }
+            for(int k = i+1; k < users.size(); k++) {
+                toSend += users.get(k).getId() + ":" + "SLO:" + users.get(k).getStartingLocation()[0] + ":" + users.get(k).getStartingLocation()[1] + ",";
+            }
+            send(toSend, users.get(i).getAddress(), users.get(i).getPort());
+            toSend = "";
         }
     }
 
@@ -95,16 +124,9 @@ public class GameServerThread extends Thread {
         int packetPort = p.getPort();
         InetAddress packetAddr = p.getAddress();
         for(int i = 0; i < users.size(); i++) {
-            if(users.get(i).getPort() != packetPort) {
-                try {
-                    byte[] buff = new byte[256];
-                    String packetText = new String(p.getData(), 0, p.getLength());
-                    buff = packetText.getBytes();
-                    DatagramPacket packet = new DatagramPacket(buff, buff.length, users.get(i).getAddress(), users.get(i).getPort());
-                    socket.send(packet);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if(users.get(i).getPort() != packetPort && !users.get(i).getAddress().equals(p.getAddress())) {
+                String packetText = new String(p.getData(), 0, p.getLength());
+                send(packetText, users.get(i).getAddress(), users.get(i).getPort());
             }
         }
     }
@@ -118,7 +140,7 @@ public class GameServerThread extends Thread {
         }
     }
 
-    public void run() {
+    public void runLobby() {
         while(!lobbyReady) { //loops while server still wants players to connect and not all ready packets received
             try{
                 byte[] buff = new byte[256];
@@ -126,7 +148,12 @@ public class GameServerThread extends Thread {
                 socket.receive(packet);
                 addToConnected(packet);
                 sendReady(); //sends ready packet to client for them to respond
+                socket.receive(packet);
                 receiveReady(packet); //gets ready packet from client and sets them to ready
+                socket.receive(packet);
+                receiveStartLocation(packet);
+                String received = new String(packet.getData(), 0, packet.getLength());
+                System.out.println(received);
                 if(lobbyReadyCheck()) {
                     lobbyReady = true;
                 }
@@ -134,7 +161,14 @@ public class GameServerThread extends Thread {
                 e.printStackTrace();
             }
         }
+        sendStartingLocations(); //sends starting locations of all other clients to each client so they can render them
         System.out.println("all clients ready");
+    }
+
+
+
+    public void run() {
+        runLobby(); //gets all connected clients into a lobby so they can start at the same time
         while(true) {
             try {
                 byte[] buff = new byte[256];
