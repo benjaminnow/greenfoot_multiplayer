@@ -27,29 +27,29 @@ public class MessageDecoder
         
 
         for(int c = 0; c < commands.size(); c++) {
-            try {
-                switch(commands.get(c)[1]) {
-                    
-                    case "SLO": 
-                        renderOtherEnemies(commands.get(c));
-                        break;
-                    case "POS":
-                        setLocationEnemy(commands.get(c));
-                        break;
-                    case "ANGL":
-                        setAngleEnemy(commands.get(c));
-                        break;
-                    case "B":
-                        renderBullet(commands.get(c));
-                        break;
-                    default:
-                        return;
+            if(commands.get(c).length != 1) {
+                try {
+                    switch(commands.get(c)[1]) {
+                        case "SLO":
+                            renderOtherEnemies(commands.get(c));
+                            break;
+                        case "POS":
+                            setLocationEnemy(commands.get(c));
+                            break;
+                        case "ANGL":
+                            setAngleEnemy(commands.get(c));
+                            break;
+                        case "B":
+                            renderBullet(commands.get(c));
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("not valid command");
+                    break;
                 }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                System.out.println("not valid command");
-                break;
             }
-            
         }
     }
     

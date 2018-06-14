@@ -18,12 +18,12 @@ public class ConnectedUser {
         ready = false;
         startingLocation = new int[2];
         id = counter++;
-        command = null;
+        command = "";
     }
 
     public void setCommand(DatagramPacket packet) {
         if(packet == null) {
-            command = null;
+            command = "";
         } else {
             String formed = "";
             String[] commands =  new String(packet.getData(), 0, packet.getLength()).split(",");

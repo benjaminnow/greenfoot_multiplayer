@@ -171,7 +171,6 @@ public class GameServerThread extends Thread {
         byte[] buff = new byte[256];
         DatagramPacket packet = new DatagramPacket(buff, buff.length);
         while((System.currentTimeMillis() - current_time) <= time_delta) {
-            //System.out.println("here");
             try {
                 socket.receive(packet);
                 setCurrentCommands(packet);
@@ -200,7 +199,6 @@ public class GameServerThread extends Thread {
                 toSend += users.get(k).getCommand() + ",";
             }
             send(toSend, users.get(i).getAddress(), users.get(i).getPort());
-            //System.out.println("tosend: " + toSend);
             toSend = "";
         }
         for(ConnectedUser u : users) {
@@ -209,7 +207,6 @@ public class GameServerThread extends Thread {
     }
 
 
-    //todo: clients now start off in the same state, they will block until they receive packets, so implement packet distribution and also tick function
 
     public void run() {
         runLobby(); //gets all connected clients into a lobby so they can start at the same time

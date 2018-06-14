@@ -23,6 +23,8 @@ public class Bullet extends Actor
     public Bullet(int x, int y, int id, int enemy) {
         x_coord = x;
         y_coord = y;
+        x_mov = 0;
+        y_mov = 0;
         this.id = id;
         enemyClientNum = enemy;
     }
@@ -61,27 +63,31 @@ public class Bullet extends Actor
         }
     }
 
+    public void removeEnemyBulletFromList() {
+        ArrayList<Bullet> bullets = ((Player)fromwho).getEnemyBulletList();
+        for(int i = 0; i < bullets.size(); i++) {
+            if(bullets.get(i).getId() == id && bullets.get(i).getEnemyClientNum() == enemyClientNum) {
+                bullets.remove(i);
+                return;
+            }
+        }
+    }
+
 
     public void act()
     {
-        //Player p = getWorld().getObjects(Player.class);
-        //Actor e = getOneIntersectingObject(Enemy.class);
-
         World w = getWorld();
-        /*if(e != null) {
-            w.removeObject(e);
-            w.removeObject(this);
-        } else {
-            if(getX() + x_mov >= w.getWidth() || getX() + x_mov <= 0 || getY() + y_mov >= w.getHeight() || getY() + y_mov <= 0) {
-                w.removeObject(this);
-            } else {
-                setLocation(getX() + x_mov, getY() + y_mov);
-            }
-        }*/
+        //List<Player> p = w.getObjects(Player.class);
+
         if(getX() + x_mov >= w.getWidth() || getX() + x_mov <= 0 || getY() + y_mov >= w.getHeight() || getY() + y_mov <= 0) {
             //remove bullet from bullet list in actor here
-            removeBulletFromList();
-            w.removeObject(this);
+            //p.get(0).setBulletList(removeBulletFromList());
+            if(enemyClientNum != -1) {
+                removeEnemyBulletFromList();
+            } else {
+                removeBulletFromList();
+                w.removeObject(this);
+            }
         } else {
             if(enemyClientNum == -1) {
                 setLocation(getX() + x_mov, getY() + y_mov);

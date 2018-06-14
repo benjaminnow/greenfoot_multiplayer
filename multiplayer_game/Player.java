@@ -53,6 +53,14 @@ public class Player extends Actor
         enemyBulletList.add(b);
     }
 
+    public void setBulletList(ArrayList<Bullet> b) {
+        bulletList = b;
+    }
+
+    public void setEnemyBulletList(ArrayList<Bullet> b) {
+        enemyBulletList = b;
+    }
+
     public void move() {
         if(Greenfoot.isKeyDown("w")) {
             setLocation(getX(), getY()-3);
@@ -141,6 +149,7 @@ public class Player extends Actor
 
     public String allInfo() {
         String toSend = getLocation() + "," + getAngle() + "," + getBullets();
+        //System.out.println(toSend);
         return(toSend);
     }
     
@@ -196,6 +205,7 @@ public class Player extends Actor
             datastream.start();
             do_once = true;
         }
+        //System.out.println(enemyBulletList);
         //send(getLocation()); //todo: stream this so that socket on server won't get stuck
         
         //send(getAngle());
