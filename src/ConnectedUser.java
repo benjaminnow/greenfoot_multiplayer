@@ -25,7 +25,15 @@ public class ConnectedUser {
         if(packet == null) {
             command = null;
         } else {
-            command = id + ":" + new String(packet.getData(), 0, packet.getLength());
+            String formed = "";
+            String[] commands =  new String(packet.getData(), 0, packet.getLength()).split(",");
+            for(int i = 0; i < commands.length; i++) {
+                commands[i] = id + ":" + commands[i] + ",";
+            }
+            for(int j = 0; j < commands.length; j++) {
+                formed += commands[j];
+            }
+            command = formed;
         }
     }
 

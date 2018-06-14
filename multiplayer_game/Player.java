@@ -15,16 +15,17 @@ public class Player extends Actor
     private InetAddress server_address;
     private int server_port;
     private int ammo;
-    private boolean shot;
     private boolean ready; //ready from the server
     private ArrayList<EnemyClient> enemies;
     private MessageDecoder decoder;
     private Thread datastream = new Thread(new PlayerDataStream(this));
-    boolean do_once = false;
-    
+    private boolean do_once = false;
+    private ArrayList<Bullet> bulletList = new ArrayList<Bullet>();
+    private ArrayList<Bullet> enemyBulletList = new ArrayList<Bullet>();
+
+
     public Player(String ip, int port) {
         ammo = 10;
-        shot = false;
         enemies = new ArrayList<EnemyClient>();
         decoder = new MessageDecoder(this);
         try {
@@ -39,6 +40,67 @@ public class Player extends Actor
             e.printStackTrace();
         }
     }
+
+    public ArrayList<Bullet> getBulletList() {
+        return(bulletList);
+    }
+
+    public ArrayList<Bullet> getEnemyBulletList() {
+        return(enemyBulletList);
+    }
+
+    public void addEnemyBullet(Bullet b) {
+        enemyBulletList.add(b);
+    }
+
+    public void move() {
+        if(Greenfoot.isKeyDown("w")) {
+            setLocation(getX(), getY()-3);
+        }
+        if(Greenfoot.isKeyDown("a")) {
+            setLocation(getX()-3, getY());
+        }
+        if(Greenfoot.isKeyDown("s")) {
+            setLocation(getX(), getY()+3);
+        }
+        if(Greenfoot.isKeyDown("d")) {
+            setLocation(getX()+3, getY());
+        }
+    }
+
+    public void aim() {
+        MouseInfo info = Greenfoot.getMouseInfo();
+        if(info != null) {
+            double angle = Math.atan2((getY()-(double) info.getY()), (getX()-(double) info.getX()));
+            setRotation((int) Math.toDegrees(angle+Math.PI));
+        }
+    }
+
+    public void shoot() {
+        World w = getWorld();
+        if(Greenfoot.mouseClicked(null)) {
+            int[] vals = getBulletMovement();
+            Bullet b = new Bullet(vals[0], vals[1], this);
+            w.addObject(b, vals[2], vals[3]);
+            bulletList.add(b);
+        }
+    }
+
+    public int[] getBulletMovement() {
+        int[] vals = new int[4];
+        int speed = 10;
+        double angleInRadians = Math.toRadians(getRotation());
+        int y_mov = (int)(speed * (Math.sin(angleInRadians)));
+        int x_mov = (int)(speed * (Math.cos(angleInRadians)));
+        // x and y bullet movement
+        vals[0] = x_mov;
+        vals[1] = y_mov;
+        // gets starting x and y so looks like it shoots from gun
+        vals[2] = getX() + (int)(Math.cos(angleInRadians) * 35);
+        vals[3] = getY() + (int)(Math.sin(angleInRadians) * 25);
+        return(vals);
+    }
+
 
     public void receiveReady() {
         try {
@@ -57,42 +119,12 @@ public class Player extends Actor
         }
     }
 
-    
-    public void move() {
-        if(Greenfoot.isKeyDown("w")) {
-            setLocation(getX(), getY()-3);
+    public String getBullets() {
+        String bullets = "";
+        for(int i = 0; i < bulletList.size(); i++) {
+            bullets += "B:" + bulletList.get(i).getId() + ":" + bulletList.get(i).getX() + ":" + bulletList.get(i).getY() + ",";
         }
-        if(Greenfoot.isKeyDown("a")) {
-            setLocation(getX()-3, getY());
-        }
-        if(Greenfoot.isKeyDown("s")) {
-            setLocation(getX(), getY()+3);
-        }
-        if(Greenfoot.isKeyDown("d")) {
-            setLocation(getX()+3, getY());
-        }
-    }
-    
-    public void aim() {
-        MouseInfo info = Greenfoot.getMouseInfo();
-        if(info != null) {
-            double angle = Math.atan2((getY ()-(double) info.getY()), (getX()-(double) info.getX()));
-            setRotation((int) Math.toDegrees(angle+Math.PI));
-        }
-    }
-    
-    public void shoot() {
-        World w = getWorld();
-        MouseInfo info = Greenfoot.getMouseInfo();
-        if(info != null && info.getButton() == 1 && !shot) {
-            System.out.println("shoot");
-            //shot = !shot;
-        }
-        if(info != null && info.getButton() == 1 && !shot) {
-            shot = !shot;
-            System.out.println("up");
-        }
-        shot = !shot;
+        return(bullets);
     }
 
     public String getLocation() {
@@ -105,6 +137,11 @@ public class Player extends Actor
         String angle = "ANGL:" + getRotation();
         //System.out.println("sent: " + angle);
         return(angle);
+    }
+
+    public String allInfo() {
+        String toSend = getLocation() + "," + getAngle() + "," + getBullets();
+        return(toSend);
     }
     
     public void send(String msg) {
